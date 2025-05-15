@@ -1,0 +1,86 @@
+# === Global ===
+.DS_Store
+Thumbs.db
+*.log
+.env
+.env.*
+
+# === Node / React Frontend ===
+node_modules/
+dist/
+dist-ssr/
+build/
+.cache/
+coverage/
+
+# Logs
+logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Editor directories and files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Lock files (uncomment if you want to ignore them)
+# package-lock.json
+# yarn.lock
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Testing
+/coverage
+
+# Production build
+/build
+
+# Misc
+*.pem
+.DS_Store
+
+# === Python / FastAPI Backend ===
+backend/__pycache__/
+backend/*.py[cod]
+backend/*.sqlite3
+backend/.env
+backend/.venv/
+backend/venv/
+backend/env/
+backend/instance/
+backend/.pytest_cache/
+backend/.mypy_cache/
+backend/.ruff_cache/
+backend/.coverage
+backend/.vscode/
+
+# Exclude any torch or model files accidentally committed
+*.pth
+*.pt
+*.onnx
+*.tflite
+*.pb
+*.ckpt
+
+# === VSCode ===
+.vscode/
+
+# === OS-Specific ===
+*.swp
+*.swo
+*.bak
+
+# === Git ===
+*.orig
