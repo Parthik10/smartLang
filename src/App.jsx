@@ -1,5 +1,11 @@
 import { useState } from "react";
 import "./App.css";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import InputSection from "./components/translation/InputSection";
+import OutputSection from "./components/translation/OutputSection";
+import TokenList from "./components/visualization/TokenList";
+import ParseTree from "./components/visualization/ParseTree";
 
 function App() {
   const [input, setInput] = useState("");
@@ -7,6 +13,8 @@ function App() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showReportForm, setShowReportForm] = useState(false);
+  const [tokens, setTokens] = useState([]);
+  const [parseTree, setParseTree] = useState(null);
   const [reportData, setReportData] = useState({
     original_text: "",
     incorrect_translation: "",
@@ -22,6 +30,8 @@ function App() {
     setIsLoading(true);
     setError("");
     setTranslation("");
+    setTokens([]);
+    setParseTree(null);
 
     try {
       const response = await fetch(`${API_URL}/translate`, {
@@ -32,8 +42,13 @@ function App() {
 
       const data = await response.json();
 
-      if (data.success && data.translation) {
+      if (data.success) {
+        console.log('Translation response:', data);
         setTranslation(data.translation);
+        console.log('Setting tokens:', data.tokens);
+        setTokens(data.tokens || []);
+        console.log('Setting parse tree:', data.parseTree);
+        setParseTree(data.parseTree || null);
       } else {
         const msg = data.error?.includes("structure")
           ? "Could not understand sentence structure. Try simplifying it."
@@ -81,157 +96,107 @@ function App() {
   };
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <div className="logo-container">
-          <span className="logo-icon">🌐</span>
-          <h1>SmartLang Translator</h1>
-        </div>
-        <p className="app-subtitle">English to Spanish Compiler-Based Translation</p>
-      </header>
+    <>
+      <div className="app-container">
+        <Header />
 
-      <div className="translation-container">
-        <div className="input-section">
-          <div className="section-header">
-            <h2>English Input</h2>
-            <div className="language-badge">EN</div>
+        <div className="translation-container">
+          <div className="translation-grid">
+            <InputSection 
+              input={input}
+              setInput={setInput}
+              handleTranslate={handleTranslate}
+              isLoading={isLoading}
+            />
+            <OutputSection 
+              translation={translation}
+              error={error}
+              handleReportError={handleReportError}
+            />
           </div>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter English text here..."
-            rows={5}
-            className="input-textarea"
-          />
-          <button 
-            className="translate-button" 
-            onClick={handleTranslate} 
-            disabled={isLoading || !input.trim()}
-          >
-            {isLoading ? (
-              <span className="loading-indicator">
-                <span className="loading-dot"></span>
-                <span className="loading-dot"></span>
-                <span className="loading-dot"></span>
-              </span>
-            ) : (
-              <>Translate</>
+
+          <div className="visualization-container">
+            {tokens.length > 0 && (
+              <div className="visualization-section">
+                <TokenList tokens={tokens} />
+              </div>
             )}
-          </button>
+            {parseTree && (
+              <div className="visualization-section">
+                <ParseTree tree={parseTree} />
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="output-section">
-          <div className="section-header">
-            <h2>Spanish Translation</h2>
-            <div className="language-badge">ES</div>
+        {showReportForm && (
+          <div className="modal-overlay">
+            <div className="report-form">
+              <div className="report-form-header">
+                <h2>Report Translation Error</h2>
+                <button 
+                  className="close-button"
+                  onClick={() => setShowReportForm(false)}
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="form-field">
+                <label>Original Text:</label>
+                <input 
+                  type="text" 
+                  value={reportData.original_text} 
+                  readOnly 
+                />
+              </div>
+              
+              <div className="form-field">
+                <label>Incorrect Translation:</label>
+                <input
+                  type="text"
+                  value={reportData.incorrect_translation}
+                  readOnly
+                />
+              </div>
+              
+              <div className="form-field">
+                <label>Expected Translation:</label>
+                <input
+                  type="text"
+                  value={reportData.expected_translation}
+                  onChange={(e) => setReportData({...reportData, expected_translation: e.target.value})}
+                />
+              </div>
+              
+              <div className="form-field">
+                <label>Additional Notes:</label>
+                <textarea
+                  value={reportData.notes}
+                  onChange={(e) => setReportData({...reportData, notes: e.target.value})}
+                />
+              </div>
+              
+              <div className="button-group">
+                <button
+                  className="cancel-button"
+                  onClick={() => setShowReportForm(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="submit-button"
+                  onClick={submitErrorReport}
+                >
+                  Submit Report
+                </button>
+              </div>
+            </div>
           </div>
-          
-          {error ? (
-            <div className="error-message">
-              <span className="error-icon">⚠️</span>
-              <p>{error}</p>
-            </div>
-          ) : translation ? (
-            <div className="translation-output">
-              <p>{translation}</p>
-              <button onClick={handleReportError} className="report-button">
-                <span className="report-icon">🔍</span> Report Error
-              </button>
-            </div>
-          ) : (
-            <div className="placeholder-container">
-              <p className="placeholder-text">Translation will appear here...</p>
-              {isLoading && (
-                <div className="translation-loading">
-                  <div className="translation-loading-animation"></div>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        )}
       </div>
-
-      {showReportForm && (
-        <div className="modal-overlay">
-          <div className="report-form">
-            <div className="report-form-header">
-              <h2>Report Translation Error</h2>
-              <button 
-                onClick={() => setShowReportForm(false)} 
-                className="close-button"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="form-field">
-              <label>Original Text:</label>
-              <input type="text" value={reportData.original_text} readOnly />
-            </div>
-            
-            <div className="form-field">
-              <label>Incorrect Translation:</label>
-              <input
-                type="text"
-                value={reportData.incorrect_translation}
-                readOnly
-              />
-            </div>
-            
-            <div className="form-field">
-              <label>Expected Translation:</label>
-              <input
-                type="text"
-                value={reportData.expected_translation}
-                onChange={(e) =>
-                  setReportData({
-                    ...reportData,
-                    expected_translation: e.target.value,
-                  })
-                }
-                placeholder="Enter the correct translation"
-              />
-            </div>
-            
-            <div className="form-field">
-              <label>Notes:</label>
-              <textarea
-                value={reportData.notes}
-                onChange={(e) =>
-                  setReportData({ ...reportData, notes: e.target.value })
-                }
-                placeholder="Please explain what's wrong with the translation"
-                rows={3}
-              />
-            </div>
-            
-            <div className="button-group">
-              <button 
-                onClick={submitErrorReport} 
-                className="submit-button"
-                disabled={!reportData.expected_translation.trim()}
-              >
-                Submit Report
-              </button>
-              <button
-                onClick={() => setShowReportForm(false)}
-                className="cancel-button"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-  <footer className="app-footer">
-  <p>
-    Developed by <strong>SmartLang Team</strong> — Parthik Mangal, Sweta Chand, Abhishek Singh
-  </p>
-  <p>© 2023 SmartLang Translator | Compiler-Based Translation Technology</p>
-</footer>
-
-    </div>
+      <Footer />
+    </>
   );
 }
 
