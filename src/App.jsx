@@ -6,6 +6,7 @@ import InputSection from "./components/translation/InputSection";
 import OutputSection from "./components/translation/OutputSection";
 import TokenList from "./components/visualization/TokenList";
 import ParseTree from "./components/visualization/ParseTree";
+import { checkGrammar, generateSentence } from "./services/gemini";
 
 function App() {
   const [input, setInput] = useState("");
@@ -21,6 +22,8 @@ function App() {
     expected_translation: "",
     notes: "",
   });
+  const [grammarResult, setGrammarResult] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   const API_URL = "http://localhost:8000/api";
 
@@ -32,22 +35,25 @@ function App() {
     setTranslation("");
     setTokens([]);
     setParseTree(null);
+    setGrammarResult("");
 
+    // Step 1: Check grammar before translation
+    const grammarCheckResult = await checkGrammar(input);
+    setGrammarResult(grammarCheckResult);
+
+    // Step 2: Proceed with translation
     try {
       const response = await fetch(`${API_URL}/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input }),
+        body: JSON.stringify({ text: input }), // Always translate the original input
       });
 
       const data = await response.json();
 
       if (data.success) {
-        console.log('Translation response:', data);
         setTranslation(data.translation);
-        console.log('Setting tokens:', data.tokens);
         setTokens(data.tokens || []);
-        console.log('Setting parse tree:', data.parseTree);
         setParseTree(data.parseTree || null);
       } else {
         const msg = data.error?.includes("structure")
@@ -61,6 +67,16 @@ function App() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleGenerateAndSetInput = async (category) => {
+    if (!category) return;
+    setIsGenerating(true);
+    setGrammarResult("");
+    setInput("");
+    const generated = await generateSentence(category);
+    setInput(generated);
+    setIsGenerating(false);
   };
 
   const handleReportError = () => {
@@ -102,13 +118,15 @@ function App() {
 
         <div className="translation-container">
           <div className="translation-grid">
-            <InputSection 
+            <InputSection
               input={input}
               setInput={setInput}
               handleTranslate={handleTranslate}
-              isLoading={isLoading}
+              isLoading={isLoading || isGenerating}
+              handleGenerate={handleGenerateAndSetInput}
+              grammarResult={grammarResult}
             />
-            <OutputSection 
+            <OutputSection
               translation={translation}
               error={error}
               handleReportError={handleReportError}

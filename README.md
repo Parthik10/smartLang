@@ -10,3 +10,14 @@ Currently, two official plugins are available:
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## Required Environment Variables
+
+To use the grammar correction and sentence generation features, you need to provide a Gemini API key.
+
+1.  Create a new file named `.env` in the root of the project.
+2.  Add the following line to the `.env` file:
+
+`VITE_GEMINI_API_KEY=YOUR_API_KEY_HERE`
+
+Replace `YOUR_API_KEY_HERE` with your actual Gemini API key.
