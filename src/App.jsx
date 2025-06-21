@@ -25,7 +25,7 @@ function App() {
   const [grammarResult, setGrammarResult] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const API_URL = "http://localhost:8000/api";
+  const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api";
 
   const handleTranslate = async () => {
     if (!input.trim()) return;
