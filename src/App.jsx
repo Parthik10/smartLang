@@ -25,6 +25,7 @@ function App() {
   const [grammarResult, setGrammarResult] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // API_URL will use the backend URL from .env (VITE_BACKEND_URL). For local development, set it to http://localhost:8000/api in .env.
   const API_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api";
 
   const handleTranslate = async () => {
@@ -46,11 +47,11 @@ function App() {
       const response = await fetch(`${API_URL}/translate`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input }), // Always translate the original input
+        body: JSON.stringify({ text: input }),
       });
 
       const data = await response.json();
-
+      console.log("Translation response:", data); //sadad
       if (data.success) {
         setTranslation(data.translation);
         setTokens(data.tokens || []);
