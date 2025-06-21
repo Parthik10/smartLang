@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '../assets/logo.PNG'; 
 
 const Header = () => {
   return (
@@ -37,7 +38,7 @@ const Header = () => {
           color: '#808080'
         }}>Team Rocket</span>
         <img 
-          src="/src/assets/logo.PNG"
+          src={logo}
           alt="Team Rocket Logo" 
           style={{ 
             height: '70px', 
@@ -51,4 +52,4 @@ const Header = () => {
   );
 };
 
-export default Header; 
+export default Header;
